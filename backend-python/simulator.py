@@ -55,19 +55,19 @@ def generate_eip712_signature(payload: dict) -> str:
     }
     types = {
         "Telemetry": [
-            {"name": "machine_id", "type": "string"},
-            {"name": "job_id", "type": "string"},
-            {"name": "layers_completed", "type": "string"},
-            {"name": "power_draw_avg", "type": "uint256"},
+            {"name": "machineId", "type": "string"},
+            {"name": "jobId", "type": "string"},
+            {"name": "layersCompleted", "type": "uint256"},
+            {"name": "powerDrawAvg", "type": "uint256"},
             {"name": "status", "type": "string"},
         ]
     }
     
     message = {
-        "machine_id": payload["machine_id"],
-        "job_id": payload["job_id"],
-        "layers_completed": payload["layers_completed"],
-        "power_draw_avg": int(payload["power_draw_avg"]),
+        "machineId": payload["machineId"],
+        "jobId": payload["jobId"],
+        "layersCompleted": int(payload["layersCompleted"]),
+        "powerDrawAvg": int(payload["powerDrawAvg"]),
         "status": payload["status"]
     }
 
@@ -98,10 +98,10 @@ async def run_simulation(machine_id: str, job_id: str, duration: int, total_laye
     avg_power = random.randint(150, 250) # Simulated Watts
     
     payload = {
-        "machine_id": machine_id,
-        "job_id": job_id,
-        "layers_completed": f"{total_layers}/{total_layers}",
-        "power_draw_avg": avg_power,
+        "machineId": machine_id,
+        "jobId": job_id,
+        "layersCompleted": total_layers,
+        "powerDrawAvg": avg_power,
         "status": "COMPLETED_SUCCESS"
     }
     

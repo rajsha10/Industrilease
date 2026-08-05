@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { machineId, startTime, endTime, pricePerHour, factory, status } = body;
+    const { machineId, startTime, endTime, pricePerHour, setupFee, totalLayers, factory, status } = body;
 
     // Validate inputs
     if (!machineId || typeof machineId !== 'string') {
@@ -84,6 +84,18 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    if (!setupFee || typeof setupFee !== 'string') {
+      return NextResponse.json(
+        { error: 'setupFee is required and must be a string representing wei/value' },
+        { status: 400 }
+      );
+    }
+    if (totalLayers === undefined || typeof totalLayers !== 'number') {
+      return NextResponse.json(
+        { error: 'totalLayers is required and must be a number' },
+        { status: 400 }
+      );
+    }
     if (!factory || typeof factory !== 'string' || !factory.startsWith('0x')) {
       return NextResponse.json(
         { error: 'factory address is required and must be a valid hex address starting with 0x' },
@@ -99,6 +111,8 @@ export async function POST(req: NextRequest) {
       startTime,
       endTime,
       pricePerHour,
+      setupFee,
+      totalLayers,
       factory,
       status: slotStatus as Slot['status'],
     });

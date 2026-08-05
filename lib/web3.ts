@@ -4,11 +4,11 @@ import { Slot } from './db';
 // ABIs
 const MACHINE_SLOT_TOKEN_ABI = [
   'function nextSlotId() external view returns (uint256)',
-  'function slots(uint256 slotId) external view returns (bytes32 machineId, uint64 startTime, uint64 endTime, uint96 pricePerHour, address factory, uint8 status)',
+  'function slots(uint256 slotId) external view returns (string machineId, uint256 startTime, uint256 endTime, uint256 pricePerHour, uint256 setupFee, uint256 totalLayers, address factory, uint8 status)',
 ];
 
 const ESCROW_ABI = [
-  'function releaseFunds(uint256 slotId, bytes calldata telemetrySignature) external',
+  'function releaseFunds(uint256 slotId, string machineId, string jobId, uint256 layersCompleted, uint256 powerDrawAvg, string status, bytes signature) external',
 ];
 
 // Configuration
@@ -79,10 +79,12 @@ export async function getOnChainSlots(): Promise<Slot[]> {
         const slotData = await contract.slots(id);
         onChainSlots.push({
           slotId: id,
-          machineId: decodeBytes32(slotData.machineId),
+          machineId: slotData.machineId,
           startTime: Number(slotData.startTime),
           endTime: Number(slotData.endTime),
           pricePerHour: slotData.pricePerHour.toString(),
+          setupFee: slotData.setupFee.toString(),
+          totalLayers: Number(slotData.totalLayers),
           factory: slotData.factory,
           status: STATUS_MAP[Number(slotData.status)] || 'AVAILABLE',
         });
@@ -99,6 +101,11 @@ export async function getOnChainSlots(): Promise<Slot[]> {
 
 export async function relayEscrowProof(
   slotId: number,
+  machineId: string,
+  jobId: string,
+  layersCompleted: number,
+  powerDrawAvg: number,
+  status: string,
   signature: string
 ): Promise<{ success: boolean; txHash: string; mock: boolean }> {
   const provider = getProvider();
@@ -117,7 +124,15 @@ export async function relayEscrowProof(
     const signatureBytes = signature.startsWith('0x') ? signature : `0x${signature}`;
 
     console.log(`[Web3] Sending releaseFunds transaction on-chain for slot ${slotId}...`);
-    const tx = await escrowContract.releaseFunds(slotId, signatureBytes);
+    const tx = await escrowContract.releaseFunds(
+      slotId,
+      machineId,
+      jobId,
+      layersCompleted,
+      powerDrawAvg,
+      status,
+      signatureBytes
+    );
     console.log(`[Web3] Transaction submitted: ${tx.hash}. Waiting for confirmation...`);
     const receipt = await tx.wait();
     console.log(`[Web3] Transaction confirmed in block ${receipt.blockNumber}`);

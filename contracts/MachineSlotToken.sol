@@ -24,10 +24,12 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
 
     /// @notice All on-chain metadata describing a single time-slot token.
     struct SlotMetadata {
-        bytes32 machineId;      // Unique identifier of the physical machine
-        uint64  startTime;      // Unix timestamp – slot window start
-        uint64  endTime;        // Unix timestamp – slot window end
-        uint96  pricePerHour;   // Price in wei (or stablecoin smallest unit)
+        string  machineId;      // Unique identifier of the physical machine
+        uint256 startTime;      // Unix timestamp – slot window start
+        uint256 endTime;        // Unix timestamp – slot window end
+        uint256 pricePerHour;   // Price in wei
+        uint256 setupFee;       // Setup fee in wei
+        uint256 totalLayers;    // Total layers for the job
         address factory;        // Factory owner who will receive payment
         SlotStatus status;      // Current lifecycle state of the slot
     }
@@ -49,9 +51,8 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
     /// @notice slotId → metadata
     mapping(uint256 => SlotMetadata) public slots;
 
-    /// @notice machineId → authorized AI agent address that can mint for it
-    /// @dev    Set once by factory owner; corresponds to ERC-7579 session key.
-    mapping(bytes32 => address) public machineAgent;
+    /// @notice Authorized AI agents allowed to mint slots.
+    mapping(address => bool) public authorizedAgents;
 
     /// @notice Address of the deployed IndustriLeaseEscrow contract.
     ///         Only the escrow is allowed to flip slot status flags.
@@ -61,16 +62,16 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
 
     event SlotMinted(
         uint256 indexed slotId,
-        bytes32 indexed machineId,
+        string machineId,
         address indexed factory,
-        uint64 startTime,
-        uint64 endTime,
-        uint96 pricePerHour
+        uint256 startTime,
+        uint256 endTime,
+        uint256 pricePerHour
     );
 
     event SlotStatusUpdated(uint256 indexed slotId, SlotStatus newStatus);
 
-    event MachineAgentRegistered(bytes32 indexed machineId, address agent);
+    event AgentAuthorizationSet(address indexed agent, bool status);
 
     event EscrowContractSet(address escrow);
 
@@ -79,7 +80,6 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
     error Unauthorized();
     error InvalidTimeRange();
     error ZeroPrice();
-    error MachineNotRegistered(bytes32 machineId);
     error SlotNotFound(uint256 slotId);
     error InvalidStatusTransition(SlotStatus current, SlotStatus requested);
 
@@ -98,13 +98,17 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
     ///         permitted to call mintSlot() on their behalf.
     /// @param  machineId  Unique off-chain hardware identifier.
     /// @param  agent      EOA / smart account address of the factory AI agent.
-    function registerMachineAgent(bytes32 machineId, address agent)
+    /// @notice Factory owner registers or revokes the AI agent address
+    ///         that is permitted to call mintSlot().
+    /// @param  agent      Address of the factory AI agent.
+    /// @param  status     Authorization status.
+    function setAgentAuthorization(address agent, bool status)
         external
         onlyOwner
     {
         require(agent != address(0), "Agent: zero address");
-        machineAgent[machineId] = agent;
-        emit MachineAgentRegistered(machineId, agent);
+        authorizedAgents[agent] = status;
+        emit AgentAuthorizationSet(agent, status);
     }
 
     /// @notice Protocol owner links the deployed escrow contract so that
@@ -131,25 +135,23 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
     ///
     /// @return slotId  The newly assigned ERC-1155 token ID.
     function mintSlot(
-        bytes32 machineId,
-        uint64  startTime,
-        uint64  endTime,
-        uint96  pricePerHour,
-        address factory
+        string calldata machineId,
+        uint256 startTime,
+        uint256 endTime,
+        uint256 pricePerHour,
+        uint256 setupFee,
+        uint256 totalLayers
     )
         external
         nonReentrant
         returns (uint256 slotId)
     {
         // ── Access control ────────────────────────────────────────────────────
-        address authorizedAgent = machineAgent[machineId];
-        if (authorizedAgent == address(0)) revert MachineNotRegistered(machineId);
-        if (msg.sender != authorizedAgent)  revert Unauthorized();
+        if (!authorizedAgents[msg.sender]) revert Unauthorized();
 
         // ── Parameter validation ──────────────────────────────────────────────
         if (endTime <= startTime)   revert InvalidTimeRange();
         if (pricePerHour == 0)      revert ZeroPrice();
-        require(factory != address(0), "Factory: zero address");
 
         // ── Assign ID & write metadata ────────────────────────────────────────
         slotId = _nextSlotId++;
@@ -159,14 +161,16 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
             startTime:    startTime,
             endTime:      endTime,
             pricePerHour: pricePerHour,
-            factory:      factory,
+            setupFee:     setupFee,
+            totalLayers:  totalLayers,
+            factory:      owner(),
             status:       SlotStatus.AVAILABLE
         });
 
         // ── Mint exactly 1 token to the factory wallet ────────────────────────
-        _mint(factory, slotId, 1, "");
+        _mint(owner(), slotId, 1, "");
 
-        emit SlotMinted(slotId, machineId, factory, startTime, endTime, pricePerHour);
+        emit SlotMinted(slotId, machineId, owner(), startTime, endTime, pricePerHour);
     }
 
     // ─── Status Lifecycle (Escrow-Only) ───────────────────────────────────────

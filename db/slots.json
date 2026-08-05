@@ -5,6 +5,8 @@
     "startTime": 1785761350,
     "endTime": 1785775750,
     "pricePerHour": "10000000000000000",
+    "setupFee": "50000000000000000",
+    "totalLayers": 100,
     "factory": "0x3333333333333333333333333333333333333333",
     "status": "AVAILABLE"
   },
@@ -14,16 +16,20 @@
     "startTime": 1785757750,
     "endTime": 1785772150,
     "pricePerHour": "20000000000000000",
+    "setupFee": "40000000000000000",
+    "totalLayers": 150,
     "factory": "0x4444444444444444444444444444444444444444",
     "status": "COMPLETED"
   },
   {
+    "slotId": 3,
     "machineId": "LASER-CUTTER-GAMMA",
     "startTime": 1785760000,
     "endTime": 1785780000,
     "pricePerHour": "15000000000000000",
+    "setupFee": "30000000000000000",
+    "totalLayers": 200,
     "factory": "0x5555555555555555555555555555555555555555",
-    "status": "AVAILABLE",
-    "slotId": 3
+    "status": "AVAILABLE"
   }
 ]

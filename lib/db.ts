@@ -3,10 +3,12 @@ import path from 'path';
 
 export interface Slot {
   slotId: number;
-  machineId: string; // "CNC-ALPHA-1" etc. (will be converted to/from bytes32 on-chain)
+  machineId: string; // "CNC-ALPHA-1" etc.
   startTime: number; // unix timestamp in seconds
   endTime: number;   // unix timestamp in seconds
   pricePerHour: string; // in wei
+  setupFee: string;     // in wei
+  totalLayers: number;
   factory: string;      // wallet address
   status: 'AVAILABLE' | 'BOOKED' | 'EXECUTING' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED';
 }
@@ -30,6 +32,8 @@ function initDb() {
         startTime: now,
         endTime: now + 4 * 3600,
         pricePerHour: '10000000000000000', // 0.01 ETH
+        setupFee: '50000000000000000', // 0.05 ETH
+        totalLayers: 100,
         factory: '0x3333333333333333333333333333333333333333',
         status: 'AVAILABLE',
       },
@@ -39,6 +43,8 @@ function initDb() {
         startTime: now - 3600,
         endTime: now + 3 * 3600,
         pricePerHour: '20000000000000000', // 0.02 ETH
+        setupFee: '40000000000000000', // 0.04 ETH
+        totalLayers: 150,
         factory: '0x4444444444444444444444444444444444444444',
         status: 'BOOKED',
       },

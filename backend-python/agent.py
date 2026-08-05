@@ -31,11 +31,12 @@ w3.eth.default_account = agent_account.address
 MACHINE_SLOT_ABI = [
     {
         "inputs": [
-            {"internalType": "bytes32", "name": "machineId", "type": "bytes32"},
-            {"internalType": "uint64", "name": "startTime", "type": "uint64"},
-            {"internalType": "uint64", "name": "endTime", "type": "uint64"},
-            {"internalType": "uint96", "name": "pricePerHour", "type": "uint96"},
-            {"internalType": "address", "name": "factory", "type": "address"}
+            {"internalType": "string", "name": "machineId", "type": "string"},
+            {"internalType": "uint256", "name": "startTime", "type": "uint256"},
+            {"internalType": "uint256", "name": "endTime", "type": "uint256"},
+            {"internalType": "uint256", "name": "pricePerHour", "type": "uint256"},
+            {"internalType": "uint256", "name": "setupFee", "type": "uint256"},
+            {"internalType": "uint256", "name": "totalLayers", "type": "uint256"}
         ],
         "name": "mintSlot",
         "outputs": [{"internalType": "uint256", "name": "slotId", "type": "uint256"}],
@@ -48,7 +49,12 @@ ESCROW_ABI = [
     {
         "inputs": [
             {"internalType": "uint256", "name": "slotId", "type": "uint256"},
-            {"internalType": "bytes", "name": "telemetrySignature", "type": "bytes"}
+            {"internalType": "string", "name": "machineId", "type": "string"},
+            {"internalType": "string", "name": "jobId", "type": "string"},
+            {"internalType": "uint256", "name": "layersCompleted", "type": "uint256"},
+            {"internalType": "uint256", "name": "powerDrawAvg", "type": "uint256"},
+            {"internalType": "string", "name": "status", "type": "string"},
+            {"internalType": "bytes", "name": "signature", "type": "bytes"}
         ],
         "name": "releaseFunds",
         "outputs": [],
@@ -85,9 +91,8 @@ async def mint_slot_on_chain():
     # 4 hour slot starting now
     start_time = int(time.time())
     end_time = start_time + (4 * 3600)
-    price_per_hour = Web3.to_wei(0.01, 'ether') # 0.01 ETH per hour
-    
-    machine_id_bytes = str_to_bytes32(MACHINE_ID)
+    setup_fee = Web3.to_wei(0.05, 'ether') # 0.05 ETH setup fee
+    total_layers = 100
     
     try:
         # In a real environment with a properly deployed contract, we'd send the tx.
@@ -95,11 +100,12 @@ async def mint_slot_on_chain():
         # If the local node doesn't have the contract, it will fail.
         # We will wrap it in try-except so the agent doesn't crash if contracts aren't deployed.
         tx = slot_contract.functions.mintSlot(
-            machine_id_bytes,
+            MACHINE_ID,
             start_time,
             end_time,
             price_per_hour,
-            Web3.to_checksum_address(FACTORY_ADDRESS)
+            setup_fee,
+            total_layers
         ).build_transaction({
             'from': agent_account.address,
             'nonce': w3.eth.get_transaction_count(agent_account.address),
@@ -169,8 +175,19 @@ async def relay_proof(payload: dict):
     print(f"[AI Agent] Session Key Manager: Relaying proof to IndustriLeaseEscrow (slotId: {slot_id})...")
     
     try:
+        machine_id = payload.get("machineId", MACHINE_ID)
+        job_id = payload.get("jobId", "JOB-12345")
+        layers_completed = int(payload.get("layersCompleted", 100))
+        power_draw_avg = int(payload.get("powerDrawAvg", 200))
+        status = payload.get("status", "COMPLETED_SUCCESS")
+
         tx = escrow_contract.functions.releaseFunds(
             slot_id,
+            machine_id,
+            job_id,
+            layers_completed,
+            power_draw_avg,
+            status,
             signature_bytes
         ).build_transaction({
             'from': agent_account.address,

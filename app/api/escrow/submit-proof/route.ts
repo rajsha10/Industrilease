@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { slotId, signature } = body;
+    const { slotId, machineId, jobId, layersCompleted, powerDrawAvg, status, signature } = body;
 
     // Validate parameters
     if (slotId === undefined || typeof slotId !== 'number') {
@@ -34,7 +34,15 @@ export async function POST(req: NextRequest) {
     console.log(`[Escrow API] Submitting proof for slot ${slotId}...`);
 
     // Submit the proof to the blockchain escrow contract (or fallback simulation)
-    const result = await relayEscrowProof(slotId, signature);
+    const result = await relayEscrowProof(
+      slotId,
+      machineId || 'CNC-ALPHA-1',
+      jobId || 'JOB-12345',
+      layersCompleted !== undefined ? Number(layersCompleted) : 100,
+      powerDrawAvg !== undefined ? Number(powerDrawAvg) : 200,
+      status || 'COMPLETED_SUCCESS',
+      signature
+    );
 
     // Sync database cache state upon successful relay
     if (result.success) {

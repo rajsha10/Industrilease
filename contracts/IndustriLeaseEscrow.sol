@@ -35,17 +35,19 @@ interface IMachineSlotToken {
     }
 
     struct SlotMetadata {
-        bytes32 machineId;
-        uint64  startTime;
-        uint64  endTime;
-        uint96  pricePerHour;
+        string  machineId;
+        uint256 startTime;
+        uint256 endTime;
+        uint256 pricePerHour;
+        uint256 setupFee;
+        uint256 totalLayers;
         address factory;
         SlotStatus status;
     }
 
     function getSlot(uint256 slotId) external view returns (SlotMetadata memory);
     function updateSlotStatus(uint256 slotId, SlotStatus newStatus) external;
-    function machineAgent(bytes32 machineId) external view returns (address);
+    function authorizedAgents(address agent) external view returns (bool);
 }
 
 contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
@@ -67,11 +69,54 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
 
     struct EscrowRecord {
         address sme;            // Buyer who locked funds
+        address payable factory; // Factory owner who will receive payment
+        address machineSigner;   // The hardware signing key registered off-chain
+        uint256 setupFee;
+        uint256 totalLayers;
         uint256 lockedAmount;   // Total ETH locked (wei)
         bool    released;       // True after any settlement (release or refund)
     }
 
     mapping(uint256 => EscrowRecord) public escrows;
+
+    // EIP-712 domain and type hashes
+    bytes32 public constant DOMAIN_TYPEHASH = keccak256(
+        "EIP712Domain(string name,string version,uint256 chainId)"
+    );
+
+    bytes32 public constant TELEMETRY_TYPEHASH = keccak256(
+        "Telemetry(string machineId,string jobId,uint256 layersCompleted,uint256 powerDrawAvg,string status)"
+    );
+
+    function getTelemetryStructHash(
+        string memory machineId,
+        string memory jobId,
+        uint256 layersCompleted,
+        uint256 powerDrawAvg,
+        string memory status
+    ) public pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                TELEMETRY_TYPEHASH,
+                keccak256(bytes(machineId)),
+                keccak256(bytes(jobId)),
+                layersCompleted,
+                powerDrawAvg,
+                keccak256(bytes(status))
+            )
+        );
+    }
+
+    function getDomainSeparator() public pure returns (bytes32) {
+        return keccak256(
+            abi.encode(
+                DOMAIN_TYPEHASH,
+                keccak256(bytes("IndustriLeaseTelemetry")),
+                keccak256(bytes("1")),
+                1
+            )
+        );
+    }
 
     /// @notice machineId → the hardware signing key registered off-chain.
     ///         This is the private key whose corresponding address is stored here.
@@ -157,7 +202,13 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
     ///         after this transaction confirms.
     ///
     /// @param slotId  Token ID of the chosen MachineSlotToken.
-    function lockFunds(uint256 slotId)
+    function lockFunds(
+        uint256 slotId,
+        address payable factory,
+        address machineSigner,
+        uint256 setupFee,
+        uint256 totalLayers
+    )
         external
         payable
         nonReentrant
@@ -169,12 +220,18 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
             revert SlotNotAvailable(slotId);
         }
 
+        // ── Parameter validation against on-chain metadata ────────────────────
+        require(factory == slot.factory, "Factory mismatch");
+        require(setupFee == slot.setupFee, "Setup fee mismatch");
+        require(totalLayers == slot.totalLayers, "Total layers mismatch");
+        require(machineSigner != address(0), "Signer: zero address");
+
         // ── Compute required payment ──────────────────────────────────────────
         uint256 durationSeconds = slot.endTime - slot.startTime;
         uint256 durationHours   = durationSeconds / 3600;
         // Enforce at least 1 hour minimum to avoid dust locks
         if (durationHours == 0) durationHours = 1;
-        uint256 required = durationHours * uint256(slot.pricePerHour);
+        uint256 required = (durationHours * slot.pricePerHour) + setupFee;
 
         if (msg.value != required) {
             revert IncorrectPayment(required, msg.value);
@@ -183,6 +240,10 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
         // ── Record escrow ─────────────────────────────────────────────────────
         escrows[slotId] = EscrowRecord({
             sme:          msg.sender,
+            factory:      factory,
+            machineSigner: machineSigner,
+            setupFee:     setupFee,
+            totalLayers:  totalLayers,
             lockedAmount: msg.value,
             released:     false
         });
@@ -200,8 +261,8 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
 
     function markExecuting(uint256 slotId) external {
         IMachineSlotToken.SlotMetadata memory slot = slotToken.getSlot(slotId);
-        address agent = slotToken.machineAgent(slot.machineId);
-        if (msg.sender != agent && msg.sender != owner()) revert OnlyAgentOrOwner();
+        bool isAgent = slotToken.authorizedAgents(msg.sender);
+        if (!isAgent && msg.sender != owner()) revert OnlyAgentOrOwner();
         if (slot.status != IMachineSlotToken.SlotStatus.BOOKED) revert SlotNotBooked(slotId);
 
         slotToken.updateSlotStatus(slotId, IMachineSlotToken.SlotStatus.EXECUTING);
@@ -224,7 +285,12 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
     /// @param telemetrySignature 65-byte ECDSA signature from machine key.
     function releaseFunds(
         uint256 slotId,
-        bytes memory telemetrySignature
+        string calldata machineId,
+        string calldata jobId,
+        uint256 layersCompleted,
+        uint256 powerDrawAvg,
+        string calldata status,
+        bytes calldata signature
     )
         external
         nonReentrant
@@ -239,15 +305,19 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
             slot.status != IMachineSlotToken.SlotStatus.EXECUTING
         ) revert SlotNotBooked(slotId);
 
-        address expectedSigner = machineSignerAddress[slot.machineId];
+        address expectedSigner = record.machineSigner;
         if (expectedSigner == address(0)) revert MachineSignerNotSet(slot.machineId);
 
-        // ── Verify telemetry proof signature ──────────────────────────────────
-        //    The Python simulator produces:
-        //      private_key.sign(keccak256(abi.encodePacked(slotId, "COMPLETED")))
-        bytes32 msgHash = keccak256(abi.encodePacked(slotId, "COMPLETED"));
-        bytes32 ethHash = msgHash.toEthSignedMessageHash();
-        address recovered = ethHash.recover(telemetrySignature);
+        // ── Verify EIP-712 telemetry signature ────────────────────────────────
+        bytes32 structHash = getTelemetryStructHash(machineId, jobId, layersCompleted, powerDrawAvg, status);
+        bytes32 msgHash = keccak256(
+            abi.encodePacked(
+                "\x19\x01",
+                getDomainSeparator(),
+                structHash
+            )
+        );
+        address recovered = msgHash.recover(signature);
 
         if (recovered != expectedSigner) revert InvalidSignature();
 
@@ -260,10 +330,10 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
         uint256 factoryShare   = (total * FACTORY_BPS)  / 10_000;
         uint256 protocolShare  = (total * PROTOCOL_BPS) / 10_000;
 
-        _safeTransfer(slot.factory,  factoryShare);
+        _safeTransfer(record.factory,  factoryShare);
         _safeTransfer(protocolTreasury, protocolShare);
 
-        emit FundsReleased(slotId, slot.factory, factoryShare, protocolShare);
+        emit FundsReleased(slotId, record.factory, factoryShare, protocolShare);
     }
 
     // ─── Fallback: Parametric partial / full refund ───────────────────────────
@@ -293,8 +363,8 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
         if (record.released) revert AlreadySettled(slotId);
         if (partialCompletionBps > 10_000) revert InvalidPercentage();
 
-        address agent = slotToken.machineAgent(slot.machineId);
-        if (msg.sender != agent && msg.sender != owner()) revert OnlyAgentOrOwner();
+        bool isAgent = slotToken.authorizedAgents(msg.sender);
+        if (!isAgent && msg.sender != owner()) revert OnlyAgentOrOwner();
 
         if (
             slot.status != IMachineSlotToken.SlotStatus.BOOKED &&
@@ -318,7 +388,7 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
             uint256 factoryShare   = factoryGross - protocolShare;
             uint256 smeRefund      = total - factoryGross;
 
-            _safeTransfer(slot.factory,      factoryShare);
+            _safeTransfer(record.factory,    factoryShare);
             _safeTransfer(protocolTreasury,  protocolShare);
             _safeTransfer(record.sme,        smeRefund);
 
@@ -338,7 +408,7 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
         uint256 durSec = slot.endTime - slot.startTime;
         durationHours  = durSec / 3600;
         if (durationHours == 0) durationHours = 1;
-        totalWei = durationHours * uint256(slot.pricePerHour);
+        totalWei = (durationHours * slot.pricePerHour) + slot.setupFee;
     }
 
     function getEscrowRecord(uint256 slotId)

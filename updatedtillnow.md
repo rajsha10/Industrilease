@@ -33,3 +33,21 @@
 - **G-code bounds-checker (`POST /api/gcode/sanitize`)**: Implemented a security validation endpoint verifying G-code motion limits (extruder temp <= 275°C, bed temp <= 110°C, feed rate <= 5000 mm/min, X/Y bounds in [0, 220], Z in [0, 250]) line-by-line. Generates a SHA-256 fingerprint upon safety validation.
 - **Slot Registry (`GET /api/slots`, `POST /api/slots`)**: Implemented slot listing which retrieves and merges available slots from smart contracts and local database caches, resolved using `slotId` keys.
 - **Escrow Relayer (`POST /api/escrow/submit-proof`)**: Implemented an API handler that accepts signed telemetry signatures from Python nodes, relays it on-chain via the Web3 bridge to release locked escrow funds, and transitions cache states to `COMPLETED`.
+
+## Phase 5: Web3 Interface & Contract Signature Alignment
+**Location**: `contracts/`, `backend-python/`, `app/api/`, `lib/`
+
+- **Solidity Contract Signature Matching**:
+  - Aligned `MachineSlotToken.sol`'s `mintSlot` to match `mintSlot(string machineId, uint256 startTime, uint256 endTime, uint256 pricePerHour, uint256 setupFee, uint256 totalLayers)`, tracking setup fee and total layers in on-chain slot metadata, and utilizing owner-designated agent authorizations.
+  - Implemented generalized agent administration via `setAgentAuthorization(address agent, bool status)` in `MachineSlotToken.sol`.
+  - Updated `IndustriLeaseEscrow.sol`'s `lockFunds` to match `lockFunds(uint256 slotId, address payable factory, address machineSigner, uint256 setupFee, uint256 totalLayers)` and calculate required deposit as `(durationHours * pricePerHour) + setupFee`, storing metadata in a slot-specific escrow record.
+  - Aligned `releaseFunds` to `releaseFunds(uint256 slotId, string machineId, string jobId, uint256 layersCompleted, uint256 powerDrawAvg, string status, bytes signature)`.
+- **EIP-712 Telemetry Schema Alignment**:
+  - Structured EIP-712 typed-data signature hashing on-chain within `IndustriLeaseEscrow.sol` using standard domain separator and telemetry struct hashes:
+    `Telemetry(string machineId,string jobId,uint256 layersCompleted,uint256 powerDrawAvg,string status)`.
+  - Configured `simulator.py` to sign telemetry payloads using the exact corresponding camelCase schema and integer-based types.
+- **Backend & Relayer Updates**:
+  - Updated python `agent.py` to compile transactions against the new minimal ABIs and pass additional telemetry variables.
+  - Modified Next.js `lib/db.ts` database cache to preserve slot parameters.
+  - Updated `lib/web3.ts` and API routes `/api/slots` and `/api/escrow/submit-proof` to validate, extract, and relay `setupFee`, `totalLayers`, and complete EIP-712 telemetry variables.
+
