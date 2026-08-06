@@ -1,20 +1,28 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Syne, Manrope } from "next/font/google";
 import "./globals.css";
+import { ScrollProgressBar } from "./components/animations";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Syne — Bold editorial display font (matches the Duke NFT headline style)
+const syne = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+// Manrope — Clean geometric sans for body & UI
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Equipshare | Industrial 5.0 DePIN",
-  description: "Democratizing High-End Industrial Capacity",
+  title: "IndustriLease | Industrial Machinery Rental Platform",
+  description:
+    "Democratizing High-End Industrial Capacity. Rent enterprise-grade 3D printers, CNCs and more via AI-powered smart contracts.",
 };
 
 export default function RootLayout({
@@ -25,9 +33,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`light ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${syne.variable} ${manrope.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">{children}</body>
+      <body className="min-h-full flex flex-col bg-white text-neutral-900">
+        <ScrollProgressBar />
+        {children}
+      </body>
     </html>
   );
 }

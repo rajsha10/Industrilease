@@ -1,6 +1,6 @@
 export const platformContent = {
   header: {
-    logo: "Equipshare",
+    logo: "IndustriLease",
     networkStatus: "Live Network: IndustriLease",
     ctaBorrow: "Borrow Capacity",
     ctaLend: "Lend Hardware",
@@ -28,10 +28,10 @@ export const platformContent = {
   },
   about: {
     title: "The Future of Manufacturing is Decentralized",
-    description: "Equipshare (IndustriLease) is an Industrial 5.0 DePIN (Decentralized Physical Infrastructure Network). We bridge the gap between underutilized, high-end factory hardware and SMEs needing immediate manufacturing capacity. By utilizing smart contracts, AI agents, and cryptographic telemetry, we eliminate trust barriers and streamline industrial leasing."
+    description: "IndustriLease is an Industrial 5.0 DePIN (Decentralized Physical Infrastructure Network). We bridge the gap between underutilized, high-end factory hardware and SMEs needing immediate manufacturing capacity. By utilizing smart contracts, AI agents, and cryptographic telemetry, we eliminate trust barriers and streamline industrial leasing."
   },
   workflow: {
-    title: "How Equipshare Works",
+    title: "How IndustriLease Works",
     steps: [
       {
         number: "01",
@@ -81,33 +81,43 @@ export const platformContent = {
     machines: [
       {
         id: "m1",
-        category: "Industrial FDM",
-        title: "Stratasys F900",
-        hourlyRate: "$45/hr",
+        category: "5-Axis CNC",
+        title: "CNC Machining Center Operating",
+        hourlyRate: "$145/hr",
         isVerified: true,
-        // TODO: Replace placeholders with custom images in the future
-        imageExterior: "https://images.unsplash.com/photo-1616422285623-14c1d48c9096?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        imageInterior: "https://images.unsplash.com/photo-1631557023366-07469a531f82?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        imageExterior: "/midsection/CNC_machining_center_operating.jpeg",
       },
       {
         id: "m2",
-        category: "5-Axis CNC",
-        title: "Haas UMC-750",
-        hourlyRate: "$120/hr",
+        category: "Industrial FDM",
+        title: "Industrial 3D Printer Render",
+        hourlyRate: "$35/hr",
         isVerified: true,
-        // TODO: Replace placeholders with custom images in the future
-        imageExterior: "https://images.unsplash.com/photo-1565515267431-7bc924297120?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        imageInterior: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        imageExterior: "/midsection/Industrial_3D_printer_render.jpeg",
       },
       {
         id: "m3",
-        category: "Metal SLS",
-        title: "EOS M 290",
-        hourlyRate: "$200/hr",
+        category: "Robotic Arm",
+        title: "Industrial Robot Arm Isolated",
+        hourlyRate: "$90/hr",
         isVerified: true,
-        // TODO: Replace placeholders with custom images in the future
-        imageExterior: "https://images.unsplash.com/photo-1533036495147-384be85d536c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-        imageInterior: "https://images.unsplash.com/photo-1581092334651-ddf26d9a09d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+        imageExterior: "/midsection/Industrial_robot_arm_isolated.jpeg",
+      },
+      {
+        id: "m4",
+        category: "Laser Cutter",
+        title: "Laser Cutting Machine Enclosure",
+        hourlyRate: "$85/hr",
+        isVerified: true,
+        imageExterior: "/midsection/Laser_cutting_machine_enclosure.jpeg",
+      },
+      {
+        id: "m5",
+        category: "Metal SLS",
+        title: "Metal SLS 3D Printer",
+        hourlyRate: "$190/hr",
+        isVerified: true,
+        imageExterior: "/midsection/Metal_SLS_3D_printer.jpeg",
       }
     ]
   },

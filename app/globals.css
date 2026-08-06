@@ -1,26 +1,244 @@
 @import "tailwindcss";
 
+/* ─── CSS Variables ─────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-display: var(--font-syne), "Syne", system-ui, sans-serif;
+  --font-body:    var(--font-manrope), "Manrope", system-ui, sans-serif;
+
+  --col-black:   #0a0a0a;
+  --col-white:   #ffffff;
+  --col-gray-50: #fafafa;
+  --col-gray-100:#f4f4f5;
+  --col-gray-200:#e4e4e7;
+  --col-gray-400:#a1a1aa;
+  --col-gray-500:#71717a;
+  --col-gray-600:#52525b;
+  --col-accent:  #111111;          /* primary CTA fill = near-black */
+  --col-accent2: #f4f4f4;          /* secondary CTA bg */
+  --col-pill-bg: #f3f3f3;
+  --col-pill-active-bg: #111111;
+  --col-pill-active-text: #ffffff;
+
+  --radius-sm:   6px;
+  --radius-md:   12px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --radius-full: 999px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ─── Reset ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--col-white);
+  color: var(--col-black);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* ─── Typography Utilities ───────────────────────────── */
+.font-display { font-family: var(--font-display); }
+.font-body    { font-family: var(--font-body); }
+
+/* ─── Buttons ────────────────────────────────────────── */
+.btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--col-black);
+  border: 1.5px solid var(--col-black);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.btn-dark:hover {
+  background: #222;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--col-black);
+  background: transparent;
+  border: 1.5px solid var(--col-gray-200);
+  cursor: pointer;
+  transition: all 0.22s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+.btn-outline:hover {
+  border-color: var(--col-black);
+  background: var(--col-gray-50);
+  transform: translateY(-1px);
+}
+
+/* ─── Pill Tags (like NFT Collections) ───────────────── */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--col-pill-bg);
+  color: var(--col-gray-600);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  user-select: none;
+}
+.pill:hover {
+  background: #ebebeb;
+  color: var(--col-black);
+}
+.pill.active {
+  background: var(--col-pill-active-bg);
+  color: var(--col-pill-active-text);
+}
+
+/* ─── Cards ──────────────────────────────────────────── */
+.card {
+  background: var(--col-white);
+  border: 1.5px solid var(--col-gray-200);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.28s cubic-bezier(.4,0,.2,1);
+}
+.card:hover {
+  border-color: #bbb;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+}
+
+/* ─── Section label ──────────────────────────────────── */
+.section-label {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--col-gray-400);
+}
+
+/* ─── Divider ────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1.5px solid var(--col-gray-200);
+}
+
+/* ─── Sparkle Decorator ──────────────────────────────── */
+.sparkle {
+  display: inline-block;
+  font-size: 22px;
+  color: var(--col-black);
+  line-height: 1;
+  animation: sparkle-spin 8s linear infinite;
+  transform-origin: center;
+}
+@keyframes sparkle-spin {
+  0%   { transform: rotate(0deg) scale(1); }
+  50%  { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ─── Mock Image Placeholder (animated) ─────────────── */
+.mock-image {
+  position: relative;
+  overflow: hidden;
+  background: var(--col-gray-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mock-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+/* ─── Hero floating cards ────────────────────────────── */
+@keyframes float-a {
+  0%, 100% { transform: rotate(-8deg) translateY(0px); }
+  50%       { transform: rotate(-8deg) translateY(-10px); }
+}
+@keyframes float-b {
+  0%, 100% { transform: rotate(6deg) translateY(0px); }
+  50%       { transform: rotate(6deg) translateY(-14px); }
+}
+.float-card-a { animation: float-a 5s ease-in-out infinite; }
+.float-card-b { animation: float-b 6s ease-in-out infinite; animation-delay: 0.8s; }
+
+/* ─── Marquee / scroll ticker ────────────────────────── */
+.marquee-track {
+  display: flex;
+  gap: 12px;
+  animation: marquee 28s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ─── Waveform mock visual ───────────────────────────── */
+@keyframes wave-bar {
+  0%, 100% { transform: scaleY(0.4); }
+  50%       { transform: scaleY(1); }
+}
+
+/* ─── Ping dot ───────────────────────────────────────── */
+@keyframes ping-dot {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+  50%       { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+/* ─── Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #f4f4f4; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #aaa; }

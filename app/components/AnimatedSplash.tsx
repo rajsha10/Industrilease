@@ -1,64 +1,137 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
 import { platformContent } from '../config/content';
+import { AnimatedHeading, Reveal, StaggerReveal, StaggerItem, ease } from './animations';
+
+const TRUST_LOGOS = [
+  { name: 'EIP-712', tag: 'Standard' },
+  { name: 'ERC-1155', tag: 'Token' },
+  { name: 'ERC-7579', tag: 'Session' },
+  { name: 'Chainlink', tag: 'Oracle' },
+  { name: 'Arbitrum', tag: 'L2' },
+];
+
+const CATEGORIES = [
+  'Industrial FDM', '5-Axis CNC', 'Metal SLS', 'Laser Cutter',
+  'Robotic Arm', 'Injection Mold', 'Wire EDM', 'Waterjet',
+  'Electron Beam', 'Plasma Cutter',
+];
 
 export default function AnimatedSplash() {
-  const { placeholderImage, nodes } = platformContent.splash;
+  const { nodes } = platformContent.splash;
+  const logosRef = useRef<HTMLDivElement>(null);
+  const logosInView = useInView(logosRef, { once: true, amount: 0.4 });
 
   return (
-    <section className="py-20 px-6 bg-slate-50 overflow-hidden">
-      <div className="max-w-6xl mx-auto relative flex flex-col items-center justify-center min-h-[500px]">
-        
-        {/* Floating Info Nodes */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="relative w-full max-w-4xl h-full flex items-center justify-center">
-            
-            {nodes.map((node, i) => {
-              // Position nodes around the center
-              const positions = [
-                { top: '10%', left: '10%' },
-                { top: '20%', right: '5%' },
-                { bottom: '15%', left: '20%' },
-              ];
-              
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.2, duration: 0.6, ease: "easeOut" }}
-                  viewport={{ once: true }}
-                  className="absolute px-4 py-2 bg-white border border-slate-200 rounded-lg shadow-sm text-sm font-semibold text-slate-700 pointer-events-auto"
-                  style={positions[i]}
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-indigo-500" />
-                    {node}
-                  </div>
-                </motion.div>
-              );
-            })}
+    <section style={{ background: '#fff', borderTop: '1.5px solid #e4e4e7' }}>
+
+      {/* ── Trust logos — staggered fade in ── */}
+      <div
+        ref={logosRef}
+        style={{
+          maxWidth: '1200px', margin: '0 auto',
+          padding: '28px 40px',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: '48px', flexWrap: 'wrap',
+          borderBottom: '1.5px solid #e4e4e7',
+        }}
+      >
+        {TRUST_LOGOS.map((logo, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
+            animate={logosInView ? { opacity: 0.35, y: 0, filter: 'blur(0px)' } : {}}
+            transition={{ delay: i * 0.1, duration: 0.6, ease: ease.snappy }}
+            whileHover={{ opacity: 0.65, scale: 1.05 }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'default' }}
+          >
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 800, color: '#0a0a0a', letterSpacing: '-0.02em' }}>
+              {logo.name}
+            </span>
+            <span style={{ fontFamily: 'var(--font-body)', fontSize: '10px', fontWeight: 600, color: '#71717a', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              {logo.tag}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ── Equipment Categories — title reveal ── */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 40px 20px' }}>
+        <Reveal style={{ textAlign: 'center' }}>
+          <AnimatedHeading
+            text="Equipment Categories"
+            as="h2"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '22px', fontWeight: 800, color: '#0a0a0a',
+              letterSpacing: '-0.02em', margin: 0, justifyContent: 'center',
+            }}
+          />
+        </Reveal>
+      </div>
+
+      {/* ── Marquee pill rows ── */}
+      <Reveal delay={0.2} style={{ overflow: 'hidden', paddingBottom: '16px' }}>
+        {/* Top row — left scroll */}
+        <div style={{ display: 'flex', gap: '12px', overflow: 'hidden', marginBottom: '12px' }}>
+          <div className="marquee-track">
+            {[...CATEGORIES, ...CATEGORIES].map((cat, i) => (
+              <div key={i} className={`pill ${i === 0 || i === CATEGORIES.length ? 'active' : ''}`}>
+                <span style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: (i === 0 || i === CATEGORIES.length) ? '#fff' : '#a1a1aa',
+                  display: 'inline-block', flexShrink: 0,
+                }} />
+                {cat}
+              </div>
+            ))}
           </div>
         </div>
+        {/* Bottom row — right scroll */}
+        <div style={{ display: 'flex', gap: '12px', overflow: 'hidden' }}>
+          <div className="marquee-track" style={{ animationDirection: 'reverse', animationDuration: '22s' }}>
+            {[...CATEGORIES.slice(5), ...CATEGORIES.slice(0, 5), ...CATEGORIES.slice(5), ...CATEGORIES.slice(0, 5)].map((cat, i) => (
+              <div key={i} className="pill" style={{ background: '#f9f9f9' }}>{cat}</div>
+            ))}
+          </div>
+        </div>
+      </Reveal>
 
-        {/* Central 3D Placeholder Image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="relative z-10 w-full max-w-3xl aspect-[16/9] bg-white border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm"
-        >
-          {/* using unoptimized img tag for placeholder urls to avoid next/image domain config issues */}
-          <img
-            src={placeholderImage}
-            alt="Spline 3D Placeholder"
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
-        
-      </div>
+      {/* ── Node/verification badges — staggered reveal ── */}
+      <StaggerReveal
+        stagger={0.1}
+        delay={0.1}
+        style={{
+          display: 'flex', justifyContent: 'center', gap: '12px',
+          flexWrap: 'wrap', padding: '20px 40px 40px',
+          borderTop: '1.5px solid #f4f4f5', marginTop: '8px',
+        }}
+      >
+        {nodes.map((node, i) => (
+          <StaggerItem key={i}>
+            <motion.div
+              className="pill"
+              style={{ background: '#0a0a0a', color: '#fff', borderColor: 'transparent' }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              ✓ {node}
+            </motion.div>
+          </StaggerItem>
+        ))}
+        <StaggerItem>
+          <motion.button
+            className="pill"
+            style={{ background: '#f4f4f5', color: '#0a0a0a', fontWeight: 700 }}
+            whileHover={{ scale: 1.05, y: -2 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            All Categories →
+          </motion.button>
+        </StaggerItem>
+      </StaggerReveal>
     </section>
   );
 }

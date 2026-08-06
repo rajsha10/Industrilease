@@ -1,27 +1,125 @@
 'use client';
 
 import { platformContent } from '../config/content';
+import { Search, Menu } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function Header() {
-  const { logo, networkStatus, ctaBorrow, ctaLend } = platformContent.header;
+  const { logo, ctaBorrow, ctaLend } = platformContent.header;
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md bg-white/70 border-b border-slate-200">
-      <div className="flex items-center gap-6">
-        <span className="text-xl font-bold text-slate-900 tracking-tight">{logo}</span>
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full border border-slate-200">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span className="text-xs font-medium text-slate-600">{networkStatus}</span>
-        </div>
+    <header
+      style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0,
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 40px',
+        height: '64px',
+        background: scrolled ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderBottom: scrolled ? '1.5px solid #e4e4e7' : '1.5px solid transparent',
+        transition: 'all 0.3s ease',
+      }}
+    >
+      {/* Left nav */}
+      <nav style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+        <a
+          href="#"
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: '#52525b',
+            textDecoration: 'none',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#0a0a0a')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#52525b')}
+        >
+          Equipment
+        </a>
+        <a
+          href="#"
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: '#52525b',
+            textDecoration: 'none',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#0a0a0a')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#52525b')}
+        >
+          How It Works
+        </a>
+        <a
+          href="#"
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: '#52525b',
+            textDecoration: 'none',
+            transition: 'color 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.color = '#0a0a0a')}
+          onMouseLeave={e => (e.currentTarget.style.color = '#52525b')}
+        >
+          Docs
+        </a>
+      </nav>
+
+      {/* Center logo */}
+      <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '20px',
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            color: '#0a0a0a',
+          }}
+        >
+          ⬡ {logo}
+        </span>
       </div>
-      <div className="flex items-center gap-4">
-        <button className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors duration-300 ease-out">
+
+      {/* Right actions */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          aria-label="Search"
+          style={{
+            width: '36px', height: '36px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            color: '#52525b',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#f4f4f5')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+        >
+          <Search size={18} />
+        </button>
+
+        <button className="btn-outline" style={{ padding: '8px 20px', fontSize: '13px' }}>
           {ctaLend}
         </button>
-        <button className="px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-500 hover:shadow-indigo-500/20 transition-all duration-300 ease-out">
+        <button className="btn-dark" style={{ padding: '8px 20px', fontSize: '13px' }}>
           {ctaBorrow}
         </button>
       </div>
