@@ -5,6 +5,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { platformContent } from '../config/content';
 import { ArrowRight, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AnimatedHeading, Reveal, fadeUp } from './animations';
+import Link from 'next/link';
+
+const MotionLink = motion(Link);
 
 const CATEGORY_STYLES: Record<string, { dot: string; bg: string }> = {
   'Industrial FDM': { dot: '#6366f1', bg: '#eef2ff' },
@@ -35,7 +38,7 @@ export default function EquipmentShowcase() {
   ];
 
   return (
-    <section style={{ background: '#fff', padding: '64px 40px', borderTop: '1.5px solid #e4e4e7', overflow: 'hidden' }}>
+    <section id="equipment" style={{ background: '#fff', padding: '64px 40px', borderTop: '1.5px solid #e4e4e7', overflow: 'hidden' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
         {/* Section header */}
@@ -63,8 +66,8 @@ export default function EquipmentShowcase() {
 
           <Reveal delay={0.25}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <motion.a
-                href="#"
+              <MotionLink
+                href="/marketplace"
                 style={{
                   fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 600,
                   color: '#0a0a0a', textDecoration: 'none',
@@ -73,7 +76,7 @@ export default function EquipmentShowcase() {
                 whileHover={{ opacity: 0.6 }}
               >
                 See all <ArrowRight size={14} />
-              </motion.a>
+              </MotionLink>
               <motion.button
                 onClick={prevSlide}
                 style={{
@@ -191,18 +194,20 @@ export default function EquipmentShowcase() {
                               </span>
                             </div>
                           )}
-                          <motion.button
+                          <MotionLink
+                            href="/marketplace"
                             style={{
                               background: '#0a0a0a', color: '#fff', border: 'none',
                               borderRadius: '8px', padding: '7px 14px',
                               fontFamily: 'var(--font-body)', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+                              textDecoration: 'none', display: 'inline-block'
                             }}
                             whileHover={{ scale: 1.05, background: '#333' }}
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                           >
                             Rent Now
-                          </motion.button>
+                          </MotionLink>
                         </div>
                       </div>
                     </div>

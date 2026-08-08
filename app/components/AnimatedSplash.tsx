@@ -3,6 +3,9 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { platformContent } from '../config/content';
+import Link from 'next/link';
+
+const MotionLink = motion(Link);
 import { AnimatedHeading, Reveal, StaggerReveal, StaggerItem, ease } from './animations';
 
 const TRUST_LOGOS = [
@@ -122,14 +125,15 @@ export default function AnimatedSplash() {
           </StaggerItem>
         ))}
         <StaggerItem>
-          <motion.button
+          <MotionLink
+            href="/marketplace"
             className="pill"
-            style={{ background: '#f4f4f5', color: '#0a0a0a', fontWeight: 700 }}
+            style={{ background: '#f4f4f5', color: '#0a0a0a', fontWeight: 700, textDecoration: 'none' }}
             whileHover={{ scale: 1.05, y: -2 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             All Categories →
-          </motion.button>
+          </MotionLink>
         </StaggerItem>
       </StaggerReveal>
     </section>

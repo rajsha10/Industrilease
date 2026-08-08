@@ -5,6 +5,9 @@ import { useRef } from 'react';
 import { platformContent } from '../config/content';
 import { ArrowRight } from 'lucide-react';
 import { AnimatedHeading, Reveal, StaggerReveal, StaggerItem, AnimatedCounter, ease } from './animations';
+import Link from 'next/link';
+
+const MotionLink = motion(Link);
 
 function Sparkle({ size = 24, style = {} }: { size?: number; style?: React.CSSProperties }) {
   return (
@@ -205,22 +208,24 @@ export default function Hero() {
             transition={{ delay: 0.9, duration: 0.6, ease: ease.snappy }}
             style={{ display: 'flex', gap: '12px', marginBottom: '52px', flexWrap: 'wrap' }}
           >
-            <motion.button
+            <MotionLink
+              href="/marketplace"
               className="btn-dark"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               {ctaBorrow} <ArrowRight size={15} />
-            </motion.button>
-            <motion.button
+            </MotionLink>
+            <MotionLink
+              href="/lender-dashboard"
               className="btn-outline"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             >
               {ctaLend}
-            </motion.button>
+            </MotionLink>
           </motion.div>
 
           {/* Stats — count up on mount */}

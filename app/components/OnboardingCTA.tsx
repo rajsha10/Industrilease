@@ -2,6 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { platformContent } from '../config/content';
+import Link from 'next/link';
+
+const MotionLink = motion(Link);
 import { ArrowRight } from 'lucide-react';
 import { AnimatedHeading, AnimatedBody, Reveal, RevealBadge, ease } from './animations';
 
@@ -98,7 +101,8 @@ export default function OnboardingCTA() {
 
         {/* CTAs */}
         <Reveal delay={0.5} style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <motion.button
+          <MotionLink
+            href="/marketplace"
             className="btn-dark"
             style={{ fontSize: '15px', padding: '14px 32px' }}
             whileHover={{ scale: 1.04, y: -2 }}
@@ -106,8 +110,9 @@ export default function OnboardingCTA() {
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             {ctaBorrow} <ArrowRight size={16} />
-          </motion.button>
-          <motion.button
+          </MotionLink>
+          <MotionLink
+            href="/lender-dashboard"
             className="btn-outline"
             style={{ fontSize: '15px', padding: '14px 32px' }}
             whileHover={{ scale: 1.04, y: -2 }}
@@ -115,7 +120,7 @@ export default function OnboardingCTA() {
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           >
             {ctaLend}
-          </motion.button>
+          </MotionLink>
         </Reveal>
       </div>
     </section>

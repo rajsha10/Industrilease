@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { platformContent } from '../config/content';
 import { Reveal, StaggerReveal, StaggerItem, ease, fadeUp } from './animations';
+import Link from 'next/link';
 
 export default function Footer() {
   const { logo } = platformContent.header;
@@ -20,18 +21,20 @@ export default function Footer() {
         }}>
           {/* Brand */}
           <Reveal variants={fadeUp} style={{ maxWidth: '280px' }}>
-            <motion.span
-              style={{
-                fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800,
-                letterSpacing: '-0.03em', color: '#fff', display: 'block', marginBottom: '10px',
-              }}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: ease.snappy }}
-              viewport={{ once: true }}
-            >
-              ⬡ {logo}
-            </motion.span>
+            <Link href="/" style={{ textDecoration: 'none' }}>
+              <motion.span
+                style={{
+                  fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 800,
+                  letterSpacing: '-0.03em', color: '#fff', display: 'block', marginBottom: '10px',
+                }}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, ease: ease.snappy }}
+                viewport={{ once: true }}
+              >
+                ⬡ {logo}
+              </motion.span>
+            </Link>
             <p style={{ fontFamily: 'var(--font-body)', fontSize: '13px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.7 }}>
               {description} Powered by autonomous AI agents, parametric escrow, and cryptographic telemetry.
             </p>

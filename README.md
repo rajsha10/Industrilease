@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IndustriLease - Industrial 5.0 DePIN Marketplace
 
-## Getting Started
+IndustriLease is a Decentralized Physical Infrastructure Network (DePIN) marketplace that democratizes high-end industrial capacity. It bridges the gap between underutilized factory hardware (such as 5-axis CNC machines and industrial 3D printers) and SMEs needing manufacturing capacity.
 
-First, run the development server:
+By integrating smart contracts, autonomous AI agents, and cryptographic telemetry, IndustriLease eliminates trust barriers and automates the entire leasing lifecycle.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local Development Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+To run the full IndustriLease ecosystem locally, follow these steps in order.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerequisites
 
-## Learn More
+- Node.js (v18 or higher)
+- Python (v3.8 or higher)
+- Hardhat (installed via npm dependencies)
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Step 1: Run the Local Blockchain & Deploy Contracts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+IndustriLease relies on smart contracts to handle time-slot tokenization and parametric escrow.
 
-## Deploy on Vercel
+1. Install project dependencies:
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. Start a local Hardhat blockchain node:
+   ```bash
+   npx hardhat node
+   ```
+   Keep this terminal open. It will run on `http://127.0.0.1:8545` and provide several test accounts with local ETH.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Open a new terminal and deploy the smart contracts:
+   ```bash
+   npx hardhat run scripts/deploy.js --network localhost
+   ```
+   On successful deployment, the script will output the deployed contract addresses:
+   - `NEXT_PUBLIC_SLOT_TOKEN_ADDRESS`
+   - `NEXT_PUBLIC_ESCROW_ADDRESS`
+
+---
+
+### Step 2: Configure Environment Variables
+
+1. **Root Directory**:
+   Create a [.env](file:///d:/hackathon/chainhack/industrilease/.env) file in the root folder (or update the existing one) with the addresses from Step 1:
+   ```env
+   NEXT_PUBLIC_SLOT_TOKEN_ADDRESS=0x[Deployed_MachineSlotToken_Address]
+   NEXT_PUBLIC_ESCROW_ADDRESS=0x[Deployed_IndustriLeaseEscrow_Address]
+   RPC_URL=http://127.0.0.1:8545
+   RELAYER_PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+   ```
+
+2. **Python Backend**:
+   Create a [.env](file:///d:/hackathon/chainhack/industrilease/backend-python/.env) file inside the `backend-python/` directory:
+   ```env
+   RPC_URL=http://localhost:8545
+   MACHINE_SLOT_TOKEN_ADDRESS=0x[Deployed_MachineSlotToken_Address]
+   INDUSTRI_LEASE_ESCROW_ADDRESS=0x[Deployed_IndustriLeaseEscrow_Address]
+   AGENT_PRIVATE_KEY=0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d
+   MACHINE_ID=CNC-ALPHA-1
+   FACTORY_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+   SIMULATOR_URL=http://localhost:8000
+   AGENT_PORT=8001
+   ```
+
+---
+
+### Step 3: Run the Next.js Frontend & API Server
+
+1. Run the development server in the root directory:
+   ```bash
+   npm run dev
+   ```
+
+2. Open [http://localhost:3000](http://localhost:3000) in your browser to view the application dashboard.
+
+---
+
+### Step 4: Run the Python Backend Services
+
+The Python services simulate the hardware controller and run the autonomous factory AI agent.
+
+1. Navigate to the Python backend directory:
+   ```bash
+   cd backend-python
+   ```
+
+2. Set up a virtual environment:
+   ```bash
+   python -m venv venv
+   ```
+
+3. Activate the virtual environment:
+   - **Windows**:
+     ```bash
+     venv\Scripts\activate
+     ```
+   - **macOS/Linux**:
+     ```bash
+     source venv/bin/activate
+     ```
+
+4. Install the required libraries:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. Start the Hardware Telemetry Simulator:
+   ```bash
+   python simulator.py
+   ```
+   The simulator runs on `http://localhost:8000`.
+
+6. Open a new terminal, navigate to `backend-python/`, activate your virtual environment, and start the Autonomous Factory AI Agent:
+   ```bash
+   python agent.py
+   ```
+   The agent runs on `http://localhost:8001` and monitors the simulator.
+
+---
+
+## Project Details & Architecture
+
+The IndustriLease platform consists of three main logical components:
+
+### 1. Smart Contracts (Solidity)
+Located in the [contracts/](file:///d:/hackathon/chainhack/industrilease/contracts) directory, these manage ownership, authorization, and funds.
+- [MachineSlotToken.sol](file:///d:/hackathon/chainhack/industrilease/contracts/MachineSlotToken.sol): An ERC-1155 token contract representing specific machine time-slots. It supports session keys/agent authorization, allowing the factory AI agent to register slots.
+- [IndustriLeaseEscrow.sol](file:///d:/hackathon/chainhack/industrilease/contracts/IndustriLeaseEscrow.sol): A parametric escrow contract that locks client payments. It validates EIP-712 cryptographic signatures generated by the hardware to confirm successful job completion before releasing funds.
+
+### 2. Fullstack Next.js Application
+Located in the [app/](file:///d:/hackathon/chainhack/industrilease/app) directory, this serves the frontend UI and secure API endpoints.
+- **Frontend Dashboard**: Provides interfaces for onboarding lenders and borrowers, uploading G-code, booking slots, and tracking live telemetry status.
+- **G-code Bounds-Checker**: Located at `/api/gcode/sanitize`, this validates G-code parameters (such as temp, feed rate, and position boundaries) and generates a SHA-256 fingerprint for verification.
+- **Slot Registry API**: Located at `/api/slots`, this fetches and combines cached database slots and on-chain slot status.
+- **Escrow Relayer API**: Located at `/api/escrow/submit-proof`, this receives telemetry proofs and signs transaction payloads to execute release operations.
+
+### 3. Python Backend Services
+Located in the [backend-python/](file:///d:/hackathon/chainhack/industrilease/backend-python) directory, these simulate factory hardware and run the agent.
+- [simulator.py](file:///d:/hackathon/chainhack/industrilease/backend-python/simulator.py): Runs a compressed timeline simulation representing CNC or 3D printing tasks. It generates cryptographic signatures (EIP-712 standard) with its private key when jobs finish successfully.
+- [agent.py](file:///d:/hackathon/chainhack/industrilease/backend-python/agent.py): An AI agent that polls the hardware status, auto-mints slots when the machine is idle, and acts as a webhook relayer forwarding completed telemetry proofs to the escrow contract.
+
+---
+
+## Features & Workflows
+
+- **Zero-Trust Security**: EIP-712 signatures mathematically prove the telemetry metrics originate from a certified hardware module before escrow settlement.
+- **Parametric Escrow**: Eliminates human escrow friction. Smart contracts release funds immediately when layers completed match the slot reservation profile.
+- **Autonomous AI Agents**: Machine owners configure agent accounts to mint slots and handle verification without manual intervention.
+- **G-code Sanitization**: Prevents hardware damage by filtering out hazardous print settings before the print job begins.

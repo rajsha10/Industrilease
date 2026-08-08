@@ -4,6 +4,9 @@ import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { platformContent } from '../config/content';
 import { AnimatedHeading, Reveal, StaggerReveal, StaggerItem, RevealBadge, ease, fadeUp, scaleUp } from './animations';
+import Link from 'next/link';
+
+const MotionLink = motion(Link);
 
 const STEP_DOTS = ['#0a0a0a', '#0a0a0a', '#0a0a0a', '#0a0a0a'];
 
@@ -11,7 +14,7 @@ export default function Workflow() {
   const { title, steps } = platformContent.workflow;
 
   return (
-    <section style={{ background: '#fafafa', padding: '64px 40px', borderTop: '1.5px solid #e4e4e7' }}>
+    <section id="how-it-works" style={{ background: '#fafafa', padding: '64px 40px', borderTop: '1.5px solid #e4e4e7' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
         {/* Header row */}
@@ -121,8 +124,8 @@ export default function Workflow() {
 
         {/* See all link */}
         <Reveal delay={0.5} style={{ textAlign: 'center', marginTop: '20px' }}>
-          <motion.a
-            href="#"
+          <MotionLink
+            href="/how-it-works"
             style={{
               fontFamily: 'var(--font-body)', fontSize: '14px', fontWeight: 600, color: '#0a0a0a',
               textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -132,7 +135,7 @@ export default function Workflow() {
             transition={{ duration: 0.22 }}
           >
             View Full Workflow Documentation →
-          </motion.a>
+          </MotionLink>
         </Reveal>
       </div>
     </section>

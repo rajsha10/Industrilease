@@ -3,6 +3,7 @@
 import { platformContent } from '../config/content';
 import { Search, Menu } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 export default function Header() {
   const { logo, ctaBorrow, ctaLend } = platformContent.header;
@@ -34,8 +35,8 @@ export default function Header() {
     >
       {/* Left nav */}
       <nav style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-        <a
-          href="#"
+        <Link
+          href="/marketplace"
           style={{
             fontFamily: 'var(--font-body)',
             fontSize: '14px',
@@ -48,9 +49,9 @@ export default function Header() {
           onMouseLeave={e => (e.currentTarget.style.color = '#52525b')}
         >
           Equipment
-        </a>
-        <a
-          href="#"
+        </Link>
+        <Link
+          href="/how-it-works"
           style={{
             fontFamily: 'var(--font-body)',
             fontSize: '14px',
@@ -63,9 +64,9 @@ export default function Header() {
           onMouseLeave={e => (e.currentTarget.style.color = '#52525b')}
         >
           How It Works
-        </a>
-        <a
-          href="#"
+        </Link>
+        <Link
+          href="/docs"
           style={{
             fontFamily: 'var(--font-body)',
             fontSize: '14px',
@@ -78,22 +79,24 @@ export default function Header() {
           onMouseLeave={e => (e.currentTarget.style.color = '#52525b')}
         >
           Docs
-        </a>
+        </Link>
       </nav>
 
       {/* Center logo */}
       <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-        <span
+        <Link
+          href="/"
           style={{
             fontFamily: 'var(--font-display)',
             fontSize: '20px',
             fontWeight: 800,
             letterSpacing: '-0.03em',
             color: '#0a0a0a',
+            textDecoration: 'none',
           }}
         >
           ⬡ {logo}
-        </span>
+        </Link>
       </div>
 
       {/* Right actions */}
@@ -116,12 +119,12 @@ export default function Header() {
           <Search size={18} />
         </button>
 
-        <button className="btn-outline" style={{ padding: '8px 20px', fontSize: '13px' }}>
+        <Link href="/lender-dashboard" className="btn-outline" style={{ padding: '8px 20px', fontSize: '13px' }}>
           {ctaLend}
-        </button>
-        <button className="btn-dark" style={{ padding: '8px 20px', fontSize: '13px' }}>
+        </Link>
+        <Link href="/marketplace" className="btn-dark" style={{ padding: '8px 20px', fontSize: '13px' }}>
           {ctaBorrow}
-        </button>
+        </Link>
       </div>
     </header>
   );

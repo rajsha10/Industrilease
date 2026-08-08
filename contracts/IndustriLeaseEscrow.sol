@@ -159,7 +159,7 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
     error OnlyAgentOrOwner();
     error TransferFailed();
     error SlotNotBooked(uint256 slotId);
-    error MachineSignerNotSet(bytes32 machineId);
+    error MachineSignerNotSet(string machineId);
 
     // ─── Constructor ──────────────────────────────────────────────────────────
 
@@ -201,7 +201,11 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
     ///         The SME uploads their encrypted CAD file off-chain immediately
     ///         after this transaction confirms.
     ///
-    /// @param slotId  Token ID of the chosen MachineSlotToken.
+    /// @param slotId         Token ID of the chosen MachineSlotToken.
+    /// @param factory        Address of the factory owner receiving the funds.
+    /// @param machineSigner  The hardware signing key address registered for this machine.
+    /// @param setupFee       Setup fee required for the print.
+    /// @param totalLayers    Total number of layers expected for the print.
     function lockFunds(
         uint256 slotId,
         address payable factory,
@@ -282,7 +286,12 @@ contract IndustriLeaseEscrow is Ownable, ReentrancyGuard {
     ///             · 10 % of locked ETH → protocol treasury
     ///
     /// @param slotId             Token ID of the settled slot.
-    /// @param telemetrySignature 65-byte ECDSA signature from machine key.
+    /// @param machineId          Unique identifier of the physical machine.
+    /// @param jobId              Unique identifier of the print job.
+    /// @param layersCompleted    Number of layers completed.
+    /// @param powerDrawAvg       Average power draw of the machine during execution.
+    /// @param status             Status of the machine telemetry.
+    /// @param signature          65-byte ECDSA signature from the machine key.
     function releaseFunds(
         uint256 slotId,
         string calldata machineId,

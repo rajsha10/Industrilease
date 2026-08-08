@@ -8,7 +8,7 @@
  */
 
 import { motion, useInView, useAnimation, Variants } from 'framer-motion';
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, ElementType } from 'react';
 
 // ── Easing presets ──────────────────────────────────────────────
 export const ease = {
@@ -31,7 +31,7 @@ export const wordVariant: Variants = {
     y: 0,
     filter: 'blur(0px)',
     transition: {
-      duration: 0.65,
+      duration: 0.55,
       ease: ease.snappy,
     },
   },
@@ -52,12 +52,8 @@ export function makeStaggerContainer(staggerSec = 0.07, delaySec = 0): Variants 
 
 /** Fade up — generic element reveal */
 export const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 28 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.65, ease: ease.snappy },
-  },
+  hidden: { opacity: 0, y: 24, filter: 'blur(4px)' },
+  visible: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.55, ease: ease.snappy } },
 };
 
 /** Fade in — no movement, just opacity */
@@ -214,7 +210,7 @@ interface RevealProps {
   className?: string;
   amount?: number;
   once?: boolean;
-  as?: keyof JSX.IntrinsicElements;
+  as?: ElementType;
 }
 
 export function Reveal({

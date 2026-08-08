@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, BackgroundTasks, Request
 import uvicorn
 from web3 import Web3
-from web3.middleware import construct_sign_and_send_raw_middleware
 from eth_account import Account
 
 load_dotenv()
@@ -24,7 +23,6 @@ AGENT_PORT = int(os.getenv("AGENT_PORT", "8001"))
 # --- Web3 Setup ---
 w3 = Web3(Web3.HTTPProvider(RPC_URL))
 agent_account = Account.from_key(AGENT_PRIVATE_KEY)
-w3.middleware_onion.add(construct_sign_and_send_raw_middleware(agent_account))
 w3.eth.default_account = agent_account.address
 
 # Minimal ABIs
@@ -91,7 +89,8 @@ async def mint_slot_on_chain():
     # 4 hour slot starting now
     start_time = int(time.time())
     end_time = start_time + (4 * 3600)
-    setup_fee = Web3.to_wei(0.05, 'ether') # 0.05 ETH setup fee
+    setup_fee = Web3.to_wei(0.0001, 'ether') # 0.0001 ETH setup fee
+    price_per_hour = Web3.to_wei(0.00001, 'ether') # 0.00001 ETH price per hour
     total_layers = 100
     
     try:

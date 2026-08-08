@@ -93,11 +93,6 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
 
     // ─── Admin: Machine & Escrow Setup ────────────────────────────────────────
 
-    /// @notice Factory owner registers their machine and designates the AI
-    ///         agent address (or ERC-7579 session key validator) that is
-    ///         permitted to call mintSlot() on their behalf.
-    /// @param  machineId  Unique off-chain hardware identifier.
-    /// @param  agent      EOA / smart account address of the factory AI agent.
     /// @notice Factory owner registers or revokes the AI agent address
     ///         that is permitted to call mintSlot().
     /// @param  agent      Address of the factory AI agent.
@@ -131,7 +126,8 @@ contract MachineSlotToken is ERC1155, Ownable, ReentrancyGuard {
     /// @param  startTime    Slot availability start (Unix timestamp, seconds).
     /// @param  endTime      Slot availability end   (Unix timestamp, seconds).
     /// @param  pricePerHour Price in wei per hour of utilisation.
-    /// @param  factory      Factory wallet that will receive escrow payments.
+    /// @param  setupFee     Fee required for setup in wei.
+    /// @param  totalLayers  Number of layers for the job.
     ///
     /// @return slotId  The newly assigned ERC-1155 token ID.
     function mintSlot(
